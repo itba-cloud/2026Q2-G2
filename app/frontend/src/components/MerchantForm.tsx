@@ -4,7 +4,8 @@ import { setMerchant } from "../api/endpoints";
 import type { MerchantResponse } from "../types";
 import { errorMessage } from "./ErrorNotice";
 import { LocationPicker, type PickedLocation } from "./map/LocationPicker";
-import { Button, Field, Input } from "./ui";
+import { PROVINCES } from "../lib/provinces";
+import { Button, Field, Input, Select } from "./ui";
 
 /* La sucursal propia de la org, para un comercio que no publica en el SEPA.
  * Su ubicación es lo que define su conjunto competitivo, igual que para una
@@ -26,7 +27,7 @@ export function MerchantForm({
 }) {
   const queryClient = useQueryClient();
   const [name, setName] = useState(merchant?.name ?? "");
-  const [province, setProvince] = useState(merchant?.province ?? "");
+  const [province, setProvince] = useState(provinceCode(merchant?.province));
   const [locality, setLocality] = useState(merchant?.locality ?? "");
   const [location, setLocation] = useState<PickedLocation | null>(
     merchant?.latitude != null && merchant?.longitude != null
@@ -109,16 +110,24 @@ export function MerchantForm({
               />
             )}
           </Field>
-          <Field label="Provincia" hint="Sin abreviar, ej. Buenos Aires.">
-            {({ id, describedBy }) => (
-              <Input
+          <Field label="Provincia">
+            {({ id }) => (
+              <Select
                 id={id}
-                aria-describedby={describedBy}
                 required
                 value={province}
                 onChange={(e) => setProvince(e.target.value)}
                 className="min-h-11"
-              />
+              >
+                <option value="" disabled>
+                  Elegí una provincia
+                </option>
+                {PROVINCES.map((p) => (
+                  <option key={p.code} value={p.code}>
+                    {p.name}
+                  </option>
+                ))}
+              </Select>
             )}
           </Field>
         </div>
@@ -140,4 +149,15 @@ export function MerchantForm({
       </Button>
     </form>
   );
+}
+
+/* The province goes out as the SEPA's own code ("AR-C"), the same as every
+ * other branch's: free text ("Capital Federal", a typo) never matched the
+ * province filter. A branch saved before this has the name typed in; it is
+ * matched back to its code, accents and case aside. */
+function provinceCode(saved: string | null | undefined): string {
+  if (!saved) return "";
+  const plain = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  const match = PROVINCES.find((p) => p.code === saved || plain(p.name) === plain(saved));
+  return match?.code ?? "";
 }
