@@ -16,8 +16,14 @@ hace falta ser `owner`). No dependen del proxy del SEPA.
    (*Primero, tu sucursal*): nombre, un punto en el mapa, localidad y
    provincia. Para que tenga competidores con estos precios, marcarla **en
    CABA, cerca de Almagro**.
-2. Subir `lista_precios_dia_1.csv` con fecha **2026-09-07**.
-3. Subir `lista_precios_dia_2.csv` con fecha **2026-09-08**.
+2. Subir `lista_precios_dia_1.csv` con la fecha de un día **que el SEPA ya
+   tenga cargado** (la de *Pipeline*; los precios de referencia son del
+   2026-09-08).
+3. Subir `lista_precios_dia_2.csv` con la fecha del día siguiente.
+
+La fecha importa: una carga propia se compara contra los precios de las
+cadenas **de ese mismo día**. Con una fecha que el SEPA no tiene cargada, la
+carga termina en `done` pero su tablero no tiene contra quién compararse.
 
 Cada archivo va directo del navegador a S3 (`raw/uploads/<upload_id>/`), con
 un POST que firma la API; desde ahí sigue el mismo camino que el archivo de

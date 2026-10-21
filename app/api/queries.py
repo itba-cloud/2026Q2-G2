@@ -15,9 +15,13 @@ from comparison import IMPLAUSIBLE_PRICE_FLOOR, MAX_CREDIBLE_GAP_PCT, OUTLIER_RA
 
 # -- Feed dates and the pipeline board ---------------------------------------
 
+# The days the SEPA chains loaded: what every comparison is against. A
+# merchant's own list does not make a day: dated after the SEPA's latest, it
+# made that date "the latest" for every org, and every branch compared on it
+# against chains with no prices that day (0 compared).
 FEED_DATES = """
     SELECT DISTINCT feed_date FROM ingest_job
-    WHERE status = 'done' ORDER BY feed_date DESC
+    WHERE status = 'done' AND kind = 'sepa' ORDER BY feed_date DESC
 """
 
 
