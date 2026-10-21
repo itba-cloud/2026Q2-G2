@@ -1,0 +1,6 @@
+# What `make verify` needs, in its own virtualenv (build/verify-venv): boto3
+# at app/shared's version, and pyarrow to read the Parquet in curated/. Not
+# the workers' pyarrow: this one runs on whatever Python the machine has
+# (22.0.0 has wheels from 3.10 to 3.14).
+boto3==1.35.49
+pyarrow==22.0.0

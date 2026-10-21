@@ -1,0 +1,4 @@
+# What app/shared needs: common.py talks to AWS (boto3) and to Postgres
+# (psycopg). Every component's requirements.txt starts from this file.
+boto3==1.35.49
+psycopg[binary,pool]==3.2.3

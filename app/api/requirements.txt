@@ -1,0 +1,4 @@
+# What goes into the API's Lambda package (see scripts/build-lambda.sh).
+-r ../shared/requirements.txt
+fastapi==0.141.1
+mangum==0.22.0

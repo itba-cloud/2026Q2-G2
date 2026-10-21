@@ -1,0 +1,32 @@
+# Not needed: every variable has a default and Deploy loads no tfvars. Copy it
+# to terraform.tfvars only to override something in a local run.
+
+# region                  = "us-east-1"
+# vpc_cidr                = "10.0.0.0/16"
+# availability_zone_count = 2
+# log_retention_days      = 7
+# tags                    = { Owner = "grupo-lgdc" }
+
+# The read replica is the first thing to cut if time or budget runs short.
+# read_replica_enabled = true
+# db_instance_class    = "db.t3.micro"
+
+# The Makefile passes worker_image_tag (a hash of the image's sources) on
+# every plan; set it here only to run a specific image.
+# worker_image_tag    = "latest"
+# worker_max_capacity = 4
+
+# The SEPA proxy's tunnel, without /v1/sepa/precios. Deploy takes it from the
+# SEPA_API_URL secret (TF_VAR_sepa_api_url); never write it in a tfvars that
+# could be committed. The cron runs at 01:00 in Buenos Aires.
+# sepa_api_url               = "https://<id>.trycloudflare.com"
+# ingest_schedule_expression = "cron(0 4 * * ? *)"
+
+# The day close's backup cron, at 10:00 in Buenos Aires: closes the day with
+# whatever chains are in.
+# day_close_schedule_expression = "cron(0 13 * * ? *)"
+
+# The platform admin's email, which gets the chains that fail to process.
+# Deploy takes it from the BOOTSTRAP_EMAIL secret (TF_VAR_admin_email); empty
+# creates no email subscription.
+# admin_email = "admin@example.com"

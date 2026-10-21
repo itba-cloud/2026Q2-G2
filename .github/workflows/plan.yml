@@ -1,0 +1,63 @@
+# Manual. Writes the plan of what Deploy would change and uploads it as an
+# artifact, without applying anything.
+name: Plan
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type "plan" to confirm.
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terraform
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the confirmation
+        if: inputs.confirm != 'plan'
+        env:
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          echo "::error::Type \"plan\" to confirm; got \"$CONFIRM\"."
+          exit 1
+
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.16.1
+          terraform_wrapper: false
+
+      - name: Init
+        run: make init
+
+      # As Deploy plans, so the plan shows no change to the ingestion or to
+      # the admin's email subscription.
+      - name: Plan
+        env:
+          TF_VAR_sepa_api_url: ${{ secrets.SEPA_API_URL }}
+          TF_VAR_admin_email: ${{ secrets.BOOTSTRAP_EMAIL }}
+        run: |
+          make plan
+          terraform -chdir=infra show -no-color "$PWD/build/tfplan" > build/plan.txt
+
+      # Only the readable plan: the binary one carries sensitive values in clear.
+      - uses: actions/upload-artifact@v7
+        with:
+          name: plan
+          path: build/plan.txt

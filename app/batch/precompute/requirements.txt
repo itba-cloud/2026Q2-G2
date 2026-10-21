@@ -1,0 +1,2 @@
+# The precompute needs nothing beyond app/shared.
+-r ../../shared/requirements.txt

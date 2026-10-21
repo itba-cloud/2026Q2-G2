@@ -1,0 +1,2 @@
+# The alert-matcher needs nothing beyond app/shared.
+-r ../../shared/requirements.txt

@@ -1,0 +1,2 @@
+# Nothing to install: the callback uses only the standard library (urllib
+# for the token endpoint), and needs nothing from app/shared.

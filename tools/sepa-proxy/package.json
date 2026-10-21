@@ -1,0 +1,15 @@
+{
+  "name": "sepa-prices-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Proxy de descarga diaria para los ZIP de precios SEPA.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test"
+  }
+}
