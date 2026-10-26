@@ -1,0 +1,8 @@
+# The context is all of app/ (frontend/node_modules included), so only what
+# the workers' image needs gets sent. verify.py is a check, not worker code.
+*
+!shared/*.py
+!shared/requirements.txt
+!batch/worker/*.py
+!batch/worker/requirements.txt
+batch/worker/verify.py

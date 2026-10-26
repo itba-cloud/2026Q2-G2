@@ -1,0 +1,2 @@
+# Nothing to install: boto3 comes with the Lambda runtime, and this needs
+# nothing else.

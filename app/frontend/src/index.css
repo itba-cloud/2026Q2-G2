@@ -1,0 +1,94 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+/* Design tokens. One accent, one neutral ramp, one validated chart palette.
+   Every colour on screen comes from here. */
+@theme {
+  /* Warm paper neutrals. The off-white is deliberate: a pure #fff plane makes
+     a dense table look like a spreadsheet, and the warmth is most of what
+     stops this reading as a generic admin panel. */
+  --color-plane: #f7f6f3;
+  --color-surface: #fdfdfc;
+  --color-ink: #14140f;
+  --color-ink-2: #55544e;
+  --color-muted: #8a887f;
+  --color-line: #e6e4dc;
+  --color-line-soft: #efede6;
+  --color-axis: #c3c2b7;
+
+  /* Deep teal is the accent. It is the one hue on screen that is neither a
+     data series nor a status, so nav, links and primary actions can own it
+     without ever being mistaken for "good", "bad" or a chart series. Swap
+     these three values to rebrand the whole app. */
+  --color-brand: #0f7b6c;
+  --color-brand-ink: #0a564b;
+  --color-brand-soft: #dcefea;
+  --color-brand-tint: #f0f7f5;
+
+  /* Chart slots: three categorical hues that clear the all-pairs
+     colour-blindness and normal-vision floors against the surface above, so a
+     series is never told apart by hue alone by accident. */
+  --color-series-1: #2a78d6;
+  --color-series-2: #eb6834;
+  --color-series-3: #1baf7a;
+
+  /* Status roles are reserved -- they never stand in for a series. */
+  --color-good: #0ca30c;
+  --color-good-ink: #006300;
+  --color-warning: #fab219;
+  --color-serious: #ec835a;
+  --color-critical: #d03b3b;
+
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-plane);
+  color: var(--color-ink);
+}
+
+/* One visible focus treatment for every interactive element, so keyboard
+   users always know where they are. Never removed, only restyled. */
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Columns of figures only line up with tabular figures; standalone display
+   numbers keep the proportional defaults. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Leaflet ships its marker icons as relative image URLs resolved at runtime
+   via new URL() in components/map/icons.ts, not through this stylesheet. */
+.leaflet-container {
+  font-family: inherit;
+  background-color: var(--color-plane);
+}

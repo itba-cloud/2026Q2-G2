@@ -1,0 +1,5 @@
+# To run the API on your machine: the server, and the HTTP client that
+# fastapi.testclient needs. Neither goes into the Lambda.
+-r requirements.txt
+uvicorn[standard]==0.52.4
+httpx2==2.12.0

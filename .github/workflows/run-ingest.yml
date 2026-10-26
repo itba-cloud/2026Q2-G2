@@ -1,0 +1,78 @@
+# Manual. Runs the SEPA ingestion now instead of waiting for its daily cron,
+# and shows its result: how many chains it stored in raw/, each one a job
+# for the workers. It downloads through the group's proxy, at the
+# SEPA_API_URL secret (loaded after Deploy, it is used without deploying
+# again). Without the secret, or with the proxy down, it fails with a message
+# that names the proxy; nothing else is affected.
+name: run-ingest
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type "ingest" to confirm.
+        required: true
+
+permissions:
+  contents: read
+
+# Not in the terraform group: it only reads the state, and an ingestion can
+# run while a Deploy applies.
+concurrency:
+  group: run-ingest
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the confirmation
+        if: inputs.confirm != 'ingest'
+        env:
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          echo "::error::Type \"ingest\" to confirm; got \"$CONFIRM\"."
+          exit 1
+
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.16.1
+          terraform_wrapper: false
+
+      # The function's name comes from the state.
+      - name: Init
+        run: make init
+
+      - name: Ingest
+        env:
+          SEPA_API_URL: ${{ secrets.SEPA_API_URL }}
+        run: |
+          set -o pipefail
+          mkdir -p build
+          if make ingest 2>&1 | tee build/ingest.log; then
+            {
+              echo "## Ingesta del SEPA"
+              echo
+              echo '```json'
+              cat build/ingest-result.json
+              echo
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            # The script's own line, not make's "Error 1" that follows it.
+            message="$(grep -m 1 '^The ingestion failed' build/ingest.log || tail -n 1 build/ingest.log)"
+            echo "::error::$message"
+            {
+              echo "## Ingesta del SEPA: falló"
+              echo
+              echo "$message"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi

@@ -1,0 +1,67 @@
+# On every push and pull request: build the Lambdas, then fmt, init, validate
+# and tflint, none of which needs AWS. With the AWS secrets loaded it also
+# plans against the remote state; without them the plan step says it was
+# skipped and the run stays green.
+name: Validate
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.16.1
+          terraform_wrapper: false
+      - uses: terraform-linters/setup-tflint@v6
+        with:
+          tflint_version: v0.64.0
+
+      - name: Build the Lambda packages
+        run: make lambdas
+
+      - name: fmt, init, validate and tflint
+        run: make lint
+        env:
+          # tflint --init downloads the AWS ruleset from GitHub.
+          GITHUB_TOKEN: ${{ github.token }}
+
+      # Learner Lab sessions expire after a few hours: stale secrets skip the
+      # plan with a warning instead of turning every push red.
+      - name: Plan
+        if: env.AWS_ACCESS_KEY_ID != ''
+        env:
+          # As Deploy plans, so the plan shows no change to the ingestion or
+          # to the admin's email subscription.
+          TF_VAR_sepa_api_url: ${{ secrets.SEPA_API_URL }}
+          TF_VAR_admin_email: ${{ secrets.BOOTSTRAP_EMAIL }}
+        run: |
+          if ! aws sts get-caller-identity >/dev/null 2>&1; then
+            echo "::warning::Plan skipped: the AWS secrets are expired or invalid."
+            echo "Plan skipped: the AWS secrets are expired or invalid." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          make init
+          make plan PLAN_FLAGS=-lock=false
+
+      - name: Plan skipped
+        if: env.AWS_ACCESS_KEY_ID == ''
+        run: |
+          echo "::notice::Plan skipped: the repo has no AWS secrets."
+          echo "Plan skipped: the repo has no AWS secrets (\`AWS_ACCESS_KEY_ID\`)." >> "$GITHUB_STEP_SUMMARY"

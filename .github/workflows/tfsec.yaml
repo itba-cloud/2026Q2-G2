@@ -42,8 +42,7 @@ jobs:
       - name: tfsec
         uses: aquasecurity/tfsec-pr-commenter-action@1672d3f23fd98a39c30d0fb7d8d1b4f0967134bd
         with:
-          working_directory: terraform/organization
-          tfsec_args: --exclude-path 'terraform/modules'
+          working_directory: infra
           tfsec_formats: sarif,csv
           soft_fail_commenter: true # Fails the check
           github_token: ${{ github.token }}

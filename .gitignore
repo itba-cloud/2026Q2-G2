@@ -1,0 +1,26 @@
+.data/
+__pycache__/
+*.pyc
+
+# Terraform. El tfvars lleva la password de la base y la auth key del tailnet;
+# el .example es el molde y sí va al repo.
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+
+# Sistema y editores
+.DS_Store
+.idea/
+.vscode/
+
+# Dumps del SEPA para pruebas locales; pesan y no van al repo.
+zips/
+
+# Lo que arma `make`: los paquetes de las Lambdas.
+/build/
+
+# Índice local de CodeGraph.
+.codegraph/

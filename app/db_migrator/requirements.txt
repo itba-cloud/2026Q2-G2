@@ -1,0 +1,2 @@
+# The migrator needs nothing beyond app/shared.
+-r ../shared/requirements.txt
