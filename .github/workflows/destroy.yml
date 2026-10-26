@@ -1,0 +1,57 @@
+# Manual. Destroys everything Deploy created. The state bucket stays, empty of
+# resources, so a later Deploy reuses it.
+name: Destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: Rama o SHA interno con el código a evaluar.
+        required: true
+        default: evaluation/pr-5
+        type: string
+      confirm:
+        description: Type "destroy" to confirm.
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terraform
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the confirmation
+        if: inputs.confirm != 'destroy'
+        env:
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          echo "::error::Type \"destroy\" to confirm; got \"$CONFIRM\"."
+          exit 1
+
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.source_ref }}
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.16.1
+          terraform_wrapper: false
+
+      - name: Init
+        run: make init
+
+      - name: Destroy
+        run: make destroy
